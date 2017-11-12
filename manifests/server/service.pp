@@ -1,8 +1,8 @@
-# == Class kafka::service
+# == Class kafka::server::service
 #
-# To ensure the kafka service is running.
+# Ensure the Kafka broker service is running.
 #
-class kafka::service {
+class kafka::server::service {
   if $::kafka::service_name {
     service { $::kafka::service_name:
       ensure     => running,

@@ -1,8 +1,10 @@
-# == Class kafka::config
+# == Class kafka::server::config
 #
-# Configure kafka
+# Configure Kafka broker
 #
-class kafka::config {
+class kafka::server::config {
+  include ::stdlib
+
   file { "${kafka::confdir}/server.properties":
     owner   => 'root',
     group   => 'root',

@@ -11,6 +11,7 @@ class kafka (
   $id = undef,
   $properties = undef,
   $package_name = $::kafka::params::package_name,
+  $package_client_name = $::kafka::params::package_client_name,
   $service_name = $::kafka::params::service_name,
 ) inherits ::kafka::params {
   include ::stdlib
@@ -59,9 +60,4 @@ class kafka (
   }
 
   $_properties = merge($dyn_properties, $properties)
-
-  class { '::kafka::install': }
-  -> class { '::kafka::config': }
-  ~> class { '::kafka::service': }
-  -> Class['::kafka']
 }

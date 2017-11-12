@@ -66,6 +66,7 @@ Be aware of:
         hostnames           => $kafka_brokers,
         zookeeper_hostnames => $zookeeper_hostnames,
       }
+      include ::kafka::server
     }
 
 **Example 2**: manual ID assignments
@@ -91,6 +92,7 @@ Be aware of:
         id                  => 1,
         zookeeper_hostnames => $zookeeper_hostnames,
       }
+      include ::kafka::server
     }
 
     node 'broker2.example.com' {
@@ -98,6 +100,7 @@ Be aware of:
         id                  => 2,
         zookeeper_hostnames => $zookeeper_hostnames,
       }
+      include ::kafka::server
     }
 
 ## Reference
@@ -105,10 +108,15 @@ Be aware of:
 ### Classes
 
 * [**`kafka`**](#parameters): Main class
-* `kafka::config`
-* `kafka::install`
+* [**`kafka::server`**]: Kafka broker
+* `kafka::server::config`: Configure Kafka broker
+* `kafka::server::install`: Installation of Kafka broker
+* `kafka::server::service`: Ensure the Kafka broker service is running
+* [**`kafka::client`**]: Kafka client
+* `kafka::client::config`: Stub class
+* `kafka::client::install`: Installation of Kafka client
+* `kafka::client::service`: Stub class
 * `kafka::params`
-* `kafka::service`
 
 ### Parameters
 

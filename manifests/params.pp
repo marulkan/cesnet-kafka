@@ -4,7 +4,12 @@
 # It sets variables according to platform.
 #
 class kafka::params {
-  $confdir = '/etc/kafka/conf'
-  $package_name = 'kafka-server'
-  $service_name = 'kafka-server'
+  case $::osfamily {
+    default: {
+      $confdir = '/etc/kafka/conf'
+      $package_name = 'kafka-server'
+      $package_client_name = 'kafka'
+      $service_name = 'kafka-server'
+    }
+  }
 }
