@@ -1,0 +1,15 @@
+# see kafka.server.KafkaConfig for additional details and defaults
+
+<% properties = scope.lookupvar('kafka::_properties') -%>
+<% properties.keys.each do |key| -%>
+<% value = properties[key] -%>
+<% if value != :undef and value != '::undef' then -%>
+<%= key -%>=<%= value %>
+<% end -%>
+<% end -%>
+<% zh = scope.lookupvar('kafka::_zookeeper_hostnames') -%>
+<% if !zh || zh == :undef then -%>
+<%   zh = ['localhost'] -%>
+<% end -%>
+<% root = scope.lookupvar('kafka::zookeeper_chroot') -%>
+zookeeper.connect=<%= zh.map { |h| h + ':2181' + root}.join(',') %>
