@@ -103,6 +103,20 @@ Be aware of:
       include ::kafka::server
     }
 
+### Security
+
+Kerberos keytab file needs to be prepared in */etc/security/keytab/kafka.service.keytab* location (can be changed by *keytab* parameter).
+
+Principal name: *kafka/HOSTNAME*
+
+**Example**:
+
+    class{'kafka':
+      hostnames           => $kafka_brokers,
+      zookeeper_hostnames => $zookeeper_hostnames,
+      realm               => 'EXAMPLE.COM',
+    }
+
 ### IPv6
 
 IPv6 is working out-of-the-box.
@@ -167,11 +181,23 @@ By default, the ID is generated automatically as order of the node hostname (*::
 
 Beware changing leads requires internal data cleanups or internal metadata modification.
 
+####`keytab`
+
+Kerberos keytab file. Default: '/etc/security/keytab/kafka.service.keytab'.
+
+Kerberos keytab file with principal *kafka/HOSTNAME*.
+
 ####`properties`
 
 Generic properties to be set for the Kafka brokers. Default: undef.
 
 Some properties are set automatically, "::undef" string explicitly removes given property. Empty string sets the empty value.
+
+####`realm`
+
+Kerberos realm. Default: ''.
+
+Non-empty value will enable security with SASL suport.
 
 ####`zookeeper_hostnames`
 

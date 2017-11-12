@@ -5,6 +5,7 @@
 #
 class kafka (
   $alternatives = '::default',
+  $environment = undef,
   $zookeeper_chroot = '/kafka',
   $hostnames = undef,
   $zookeeper_hostnames = undef,
@@ -13,9 +14,10 @@ class kafka (
   $package_name = $::kafka::params::package_name,
   $package_client_name = $::kafka::params::package_client_name,
   $service_name = $::kafka::params::service_name,
+  $keytab = '/etc/security/keytab/kafka.service.keytab',
+  $realm = '',
 ) inherits ::kafka::params {
   include ::stdlib
-  include ::zookeeper
 
   if $id {
     $_id = $id
@@ -32,7 +34,7 @@ class kafka (
   if $zookeeper_hostnames {
     $_zookeeper_hostnames = $zookeeper_hostnames
   } else {
-    $_zookeeper_hostnames = $::zookeeper::hostnames
+    $_zookeeper_hostnames = getvar('zookeeper::hostnames')
   }
 
   # 0 is OK, but counting from 1 here
@@ -54,10 +56,33 @@ class kafka (
     #'log.retention.bytes' => 1073741824,
     'log.segment.bytes' => 1073741824,
     'log.retention.check.interval.ms' => 300000,
-    # in server.properties.erb
-    #'zookeeper.connect' => '',
+    # value generated properties.erb
+    'zookeeper.connect' => '::undef',
     'zookeeper.connection.timeout.ms' => 6000,
   }
 
-  $_properties = merge($dyn_properties, $properties)
+  if $realm and $realm != '' {
+    $protocol = 'SASL_PLAINTEXT'
+    $sec_environment = {
+      'KAFKA_OPTS' => "-Djava.security.auth.login.config=${::kafka::confdir}/jaas.conf",
+    }
+    $sec_properties = {
+      'advertised.listeners' => "SASL_PLAINTEXT://${::fqdn}:9093",
+      'listeners' => 'SASL_PLAINTEXT://0.0.0.0:9093,SASL_SSL://0.0.0.0:9094',
+      'sasl.kerberos.service.name' => 'kafka',
+      'security.protocol' => $protocol,
+      'security.inter.broker.protocol' => $protocol,
+    }
+  } else {
+    $sec_environment = undef
+    $sec_properties = undef
+  }
+
+  $_properties = merge($dyn_properties, $sec_properties, $properties)
+  $_environment = merge($sec_environment, $environment)
+
+  $client_properties_list = [
+    'sasl.kerberos.service.name',
+    'security.protocol',
+  ]
 }

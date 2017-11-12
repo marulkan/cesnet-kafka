@@ -3,4 +3,6 @@
 #  hostnames => ['h1'],
 #}
 
-include ::kafka
+class { '::kafka':
+  realm => 'MONKEY_ISLAND',
+}
