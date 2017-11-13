@@ -1,16 +1,16 @@
 # see kafka.server.KafkaConfig for additional details and defaults
 
-<% @properties.keys.each do |key| -%>
-<% value = @properties[key] -%>
-<% if value != :undef and value != '::undef' and @properties_list.include?(key) then -%>
-<%= key -%>=<%= value %>
-<% end -%>
-<% end -%>
 <% if @properties_list.include? 'zookeeper.connect' -%>
 <% zh = scope.lookupvar('kafka::_zookeeper_hostnames') -%>
 <% if !zh || zh == :undef then -%>
 <%   zh = ['localhost'] -%>
 <% end -%>
 <% root = scope.lookupvar('kafka::zookeeper_chroot') -%>
-zookeeper.connect=<%= zh.map { |h| h + ':2181'}.join(',') + root %>
+<% @properties['zookeeper.connect'] = zh.map { |h| h + ':2181'}.join(',') + root -%>
+<% end -%>
+<% @properties.keys.sort.each do |key| -%>
+<% value = @properties[key] -%>
+<% if value != :undef and value != '::undef' and @properties_list.include?(key) then -%>
+<%= key -%>=<%= value %>
+<% end -%>
 <% end -%>
