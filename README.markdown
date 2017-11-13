@@ -9,10 +9,14 @@
     * [What cesnet-kafka affects](#what-cesnet-kafka-affects)
     * [Setup requirements](#setup-requirements)
 3. [Usage - Configuration options and additional functionality](#usage)
-4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
+    * [Security](#security)
+    * [SSL](#ssl)
+    * [IPv6](#ipv6)
+4. [Client Examples](#client-example)
+5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
     * [Module Parameters](#parameters)
-5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Development - Guide for contributing to the module](#development)
+6. [Limitations - OS compatibility, etc.](#limitations)
+7. [Development - Guide for contributing to the module](#development)
 
 ## Module Description
 
@@ -31,7 +35,15 @@ Puppet module takes list of the zookeeper servers from zookeeper puppet module.
  * alternatives are used for */etc/kafka/conf* in BigTop-based distributions
  * this module switches to the new alternative by default on Debian, so the original configuration can be kept intact
 * Files modified:
+ * */etc/default/kafka-server*
+ * */etc/kafka/conf/client.properties*
  * */etc/kafka/conf/server.properties*
+ * */etc/profile.d/kafka.csh*
+ * */etc/profile.d/kafka.sh*
+ * */usr/lib/kafka/bin/kafka-server-startup.sh*: added line to load */etc/default/kafka-server*
+* Secret Files (keytabs, certificates):
+ * */etc/security/server.keystore*: copied to kafka home directory */var/lib/kafka*
+ * */etc/security/keytab/kafka.service.keytab*: file owner is changed
 
 ### Setup Requirements
 
@@ -105,6 +117,8 @@ Be aware of:
 
 ### Security
 
+It is possible to enable authentication using Kerberos.
+
 Kerberos keytab file needs to be prepared in */etc/security/keytab/kafka.service.keytab* location (can be changed by *keytab* parameter).
 
 Principal name: *kafka/HOSTNAME*
@@ -116,6 +130,26 @@ Principal name: *kafka/HOSTNAME*
       zookeeper_hostnames => $zookeeper_hostnames,
       realm               => 'EXAMPLE.COM',
     }
+
+### SSL
+
+Transport security can be enabled, independently on authentication.
+
+**Example**:
+
+    class { 'kafka':
+      hostnames                 => $kafka_brokers,
+      zookeeper_hostnames       => $zookeeper_hostnames,
+      ssl                       => true,
+      #ssl_cacerts              => '/etc/security/cacerts',
+      ssl_cacerts_password      => 'changeit',
+      #ssl_keystore             => '/etc/security/server.keystore',
+      ssl_keystore_password     => 'good-password',
+      #ssl_keystore_keypassword => undef,
+    }
+    include ::kafka::server
+
+Note, some Hadoop addons needs to have the key password the same as the keystore password. So it may be needed to leave *ssl_keystore_keypassword* as undef.
 
 ### IPv6
 
@@ -141,6 +175,36 @@ But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference
       'KAFKA_OPTS' => '-Djava.security.auth.login.config=/etc/kafka/conf/jaas.conf -Djava.net.preferIPv4Stack=true',
     }
   }
+
+## Client Examples
+
+Used Environment:
+
+    zoo=zoo1.example.com:2181,zoo2.example.com:2181/kafka
+    brokers=broker1.example.com:9091,broker2.example.com:9091
+    #SASL:     brokers=broker1.example.com:9092,broker2.example.com:9092
+    #SSL:      brokers=broker1.example.com:9093,broker2.example.com:9093
+    #SASL+SSL: brokers=broker1.example.com:9094,broker2.example.com:9094
+
+Create a topic:
+
+    kafka-topics.sh --create --zookeeper $zoo -replication-factor 1 --partitions 1 --topic test
+
+List topics:
+
+    kafka-topics.sh --list --zookeeper $zoo
+
+Describe a topic:
+
+    kafka-topics.sh --describe --zookeeper $zoo
+
+Launch consumer:
+
+    kafka-console-consumer.sh --bootstrap-server $brokers --topic test --from-beginning --consumer.config /etc/kafka/conf/client.properties
+
+Launch producer:
+
+    kafka-console-producer.sh --broker-list $brokers --topic test --producer.config /etc/kafka/conf/client.properties
 
 ## Reference
 
@@ -179,7 +243,7 @@ ID of Kafka broker. Default: undef (=autodetect).
 
 By default, the ID is generated automatically as order of the node hostname (*::fqdn*) in the *hostnames* array.
 
-Beware changing leads requires internal data cleanups or internal metadata modification.
+Beware changing requires internal data cleanups or internal metadata modification.
 
 ####`keytab`
 
@@ -203,25 +267,25 @@ Non-empty value will enable security with SASL suport.
 
 Enable TLS. Default: undef.
 
-#####`ssl_cacerts`
+####`ssl_cacerts`
 
 CA certificates file. Default: '/etc/security/cacerts'.
 
-#####`ssl_cacerts_password`
+####`ssl_cacerts_password`
 
 CA certificates keystore password. Default: ''.
 
-#####`ssl_keystore`
+####`ssl_keystore`
 
 Certificates keystore file. Default: '/etc/security/server.keystore'.
 
-#####`ssl_keystore_keypassword`
+####`ssl_keystore_keypassword`
 
 Certificates keystore key password. Default: undef.
 
 If not specified, `ssl_keystore_password` is used.
 
-#####`ssl_keystore_password`
+####`ssl_keystore_password`
 
 Certificates keystore file password. Default: 'changeit'.
 
@@ -229,13 +293,13 @@ Certificates keystore file password. Default: 'changeit'.
 
 Hostnames of zookeeper servers. Default: undef (from *zookeeper::hostnames* or 'localhost').
 
-This parameter is not needed, if Kafka broker sits on any of the Zookeeper server node and *zookeeper::hostnames* parameter is used.
+This parameter is not needed, if all Kafka brokers sits on any of the Zookeeper server node and *zookeeper::hostnames* parameter is used.
 
 ## Limitations
 
 No repository is provided. It must be setup externaly, or the Kafka packages must be installed already.
 
-*zookeeper\_hostnames* parameter is a complication and it should not be needed. But that would require refactoring of zookeeper puppet module - to separate zookeeper configuration class from zookeeper server setup.
+*zookeeper\_hostnames* parameter is a complication and optionally it should not be needed. But that would require refactoring of zookeeper puppet module - to separate zookeeper configuration class from zookeeper server setup.
 
 ## Development
 
