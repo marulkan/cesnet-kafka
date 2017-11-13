@@ -12,4 +12,4 @@
 <%   zh = ['localhost'] -%>
 <% end -%>
 <% root = scope.lookupvar('kafka::zookeeper_chroot') -%>
-zookeeper.connect=<%= zh.map { |h| h + ':2181' + root}.join(',') %>
+zookeeper.connect=<%= zh.map { |h| h + ':2181'}.join(',') + root %>
