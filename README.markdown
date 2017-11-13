@@ -103,6 +103,31 @@ Be aware of:
       include ::kafka::server
     }
 
+### IPv6
+
+IPv6 is working out-of-the-box.
+
+But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference to IPv4 though. Everything is working, but there are unusuccessful connection attempts and exceptions in logs.
+
+**IPv4 example without security**:
+
+  class{'kafka':
+    ...
+    environment => {
+      'KAFKA_OPTS' => '-Djava.net.preferIPv4Stack=true',
+    }
+  }
+
+**IPv4 example with security**:
+
+  class{'kafka':
+    realm => ...,
+    ...
+    environment => {
+      'KAFKA_OPTS' => '-Djava.security.auth.login.config=/etc/kafka/conf/jaas.conf -Djava.net.preferIPv4Stack=true',
+    }
+  }
+
 ## Reference
 
 ### Classes
