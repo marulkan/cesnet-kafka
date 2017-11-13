@@ -5,4 +5,5 @@
 
 class { '::kafka':
   realm => 'MONKEY_ISLAND',
+  ssl   => true,
 }

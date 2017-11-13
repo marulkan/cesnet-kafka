@@ -16,9 +16,9 @@ class kafka::server::config {
   $properties = $::kafka::_properties
   $properties_list = keys($::kafka::_properties)
   file { "${kafka::confdir}/server.properties":
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
+    owner   => 'kafka',
+    group   => 'kafka',
+    mode    => '0640',
     content => template('kafka/properties.erb'),
   }
 
@@ -49,6 +49,15 @@ class kafka::server::config {
   } else {
     file { "${::kafka::confdir}/jaas.conf":
       ensure => 'absent',
+    }
+  }
+
+  if $::kafka::ssl {
+    file { "${::kafka::homedir}/keystore.server":
+      owner  => 'kafka',
+      group  => 'kafka',
+      mode   => '0640',
+      source => $::kafka::ssl_keystore,
     }
   }
 }

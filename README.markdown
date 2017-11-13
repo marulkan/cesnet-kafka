@@ -199,6 +199,32 @@ Kerberos realm. Default: ''.
 
 Non-empty value will enable security with SASL suport.
 
+####`ssl`
+
+Enable TLS. Default: undef.
+
+#####`ssl_cacerts`
+
+CA certificates file. Default: '/etc/security/cacerts'.
+
+#####`ssl_cacerts_password`
+
+CA certificates keystore password. Default: ''.
+
+#####`ssl_keystore`
+
+Certificates keystore file. Default: '/etc/security/server.keystore'.
+
+#####`ssl_keystore_keypassword`
+
+Certificates keystore key password. Default: undef.
+
+If not specified, `ssl_keystore_password` is used.
+
+#####`ssl_keystore_password`
+
+Certificates keystore file password. Default: 'changeit'.
+
 ####`zookeeper_hostnames`
 
 Hostnames of zookeeper servers. Default: undef (from *zookeeper::hostnames* or 'localhost').

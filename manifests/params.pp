@@ -14,4 +14,10 @@ class kafka::params {
       $service_name = 'kafka-server'
     }
   }
+
+  $cacerts = '/etc/security/cacerts'
+  $cacerts_password = ''
+  $keystore = '/etc/security/server.keystore'
+  $keystore_password = 'changeit'
+  $keystore_keypassword = undef
 }
