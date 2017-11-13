@@ -91,15 +91,24 @@ class kafka (
 
   if $realm and $realm != '' {
     $sec_environment = {
-      'KAFKA_OPTS' => "-Djava.security.auth.login.config=${::kafka::confdir}/jaas.conf",
+      'client' => {
+        'KAFKA_OPTS' => "-Djava.security.auth.login.config=${::kafka::confdir}/jaas-client.conf",
+      },
+      'server' => {
+        'KAFKA_OPTS' => "-Djava.security.auth.login.config=${::kafka::confdir}/jaas-server.conf",
+      },
     }
     $sec_properties = {
       'sasl.kerberos.service.name' => 'kafka',
       'security.protocol' => $protocol,
       'security.inter.broker.protocol' => $protocol,
+      'zookeeper.set.acl' => true,
     }
   } else {
-    $sec_environment = undef
+    $sec_environment = {
+      'client' => undef,
+      'server' => undef,
+    }
     $sec_properties = undef
   }
 
@@ -118,12 +127,26 @@ class kafka (
   }
 
   $_properties = merge($dyn_properties, $sec_properties, $ssl_properties, $properties)
-  $_environment = merge($sec_environment, $environment)
-
+  # subset to use for clients
   $client_properties_list = [
     'sasl.kerberos.service.name',
     'security.protocol',
     'ssl.truststore.location',
     'ssl.truststore.password',
   ]
+
+  if $environment and has_key($environment, 'client') {
+    $environment_client = $environment['client']
+  } else {
+    $environment_client = undef
+  }
+  if $environment and has_key($environment, 'server') {
+    $environment_server = $environment['server']
+  } else {
+    $environment_server = undef
+  }
+  $_environment = {
+    'client' => merge($sec_environment['client'], $environment_client),
+    'server' => merge($sec_environment['server'], $environment_server),
+  }
 }

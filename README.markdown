@@ -133,7 +133,7 @@ Principal name: *kafka/HOSTNAME*
 
 ### SSL
 
-Transport security can be enabled, independently on authentication.
+Transport security can be enabled, independently on the authentication.
 
 **Example**:
 
@@ -159,26 +159,36 @@ But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference
 
 **IPv4 example without security**:
 
-  class{'kafka':
-    ...
-    environment => {
-      'KAFKA_OPTS' => '-Djava.net.preferIPv4Stack=true',
+    class{'kafka':
+      ...
+      environment => {
+        'client' => {
+          'KAFKA_OPTS' => '-Djava.net.preferIPv4Stack=true',
+        }
+        'server' => {
+          'KAFKA_OPTS' => '-Djava.net.preferIPv4Stack=true',
+        }
+      }
     }
-  }
 
 **IPv4 example with security**:
 
-  class{'kafka':
-    realm => ...,
-    ...
-    environment => {
-      'KAFKA_OPTS' => '-Djava.security.auth.login.config=/etc/kafka/conf/jaas.conf -Djava.net.preferIPv4Stack=true',
+    class{'kafka':
+      realm => ...,
+      ...
+      environment => {
+        'client' => {
+          'KAFKA_OPTS' => '-Djava.security.auth.login.config=/etc/kafka/conf/jaas-client.conf -Djava.net.preferIPv4Stack=true',
+        }
+        'server' => {
+          'KAFKA_OPTS' => '-Djava.security.auth.login.config=/etc/kafka/conf/jaas-server.conf -Djava.net.preferIPv4Stack=true',
+        }
+      }
     }
-  }
 
 ## Client Examples
 
-Used Environment:
+Used environment:
 
     zoo=zoo1.example.com:2181,zoo2.example.com:2181/kafka
     brokers=broker1.example.com:9091,broker2.example.com:9091
@@ -228,6 +238,12 @@ Launch producer:
 Switches the alternatives used for the configuration. Default: 'cluster' (Debian) or undef.
 
 It can be used only when supported (for example with distributions based on BigTop).
+
+####`environment`
+
+Environment variables to set. Default: undef.
+
+Value is a hash with *client*, and *server* keys.
 
 ####`hostnames`
 

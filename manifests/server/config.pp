@@ -5,7 +5,7 @@
 class kafka::server::config {
   include ::stdlib
 
-  $environment = $::kafka::_environment
+  $environment = $::kafka::_environment['server']
   file { $::kafka::envfile_server:
     owner   => 'root',
     group   => 'root',
@@ -40,14 +40,14 @@ class kafka::server::config {
       mode  => '0400',
     }
 
-    file { "${::kafka::confdir}/jaas.conf":
+    file { "${::kafka::confdir}/jaas-server.conf":
       owner   => 'root',
       group   => 'root',
       mode    => '0644',
-      content => template('kafka/jaas.conf.erb'),
+      content => template('kafka/jaas-server.conf.erb'),
     }
   } else {
-    file { "${::kafka::confdir}/jaas.conf":
+    file { "${::kafka::confdir}/jaas-server.conf":
       ensure => 'absent',
     }
   }

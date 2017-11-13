@@ -3,7 +3,7 @@
 # Stub class
 #
 class kafka::client::config {
-  $environment = $::kafka::_environment
+  $environment = $::kafka::_environment['client']
   file { '/etc/profile.d/kafka.sh':
     owner   => 'root',
     group   => 'root',
@@ -24,5 +24,18 @@ class kafka::client::config {
     group   => 'root',
     mode    => '0644',
     content => template('kafka/properties.erb'),
+  }
+
+  if $::kafka::realm and $::kafka::realm != '' {
+    file { "${::kafka::confdir}/jaas-client.conf":
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => template('kafka/jaas-client.conf.erb'),
+    }
+  } else {
+    file { "${::kafka::confdir}/jaas-client.conf":
+      ensure => 'absent',
+    }
   }
 }
