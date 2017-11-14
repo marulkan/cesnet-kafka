@@ -206,10 +206,10 @@ Some best practices:
 Used environment:
 
     zoo=zoo1.example.com:2181,zoo2.example.com:2181/kafka
-    brokers=broker1.example.com:9091,broker2.example.com:9091
-    #SASL:     brokers=broker1.example.com:9092,broker2.example.com:9092
-    #SSL:      brokers=broker1.example.com:9093,broker2.example.com:9093
-    #SASL+SSL: brokers=broker1.example.com:9094,broker2.example.com:9094
+    brokers=broker1.example.com:9092,broker2.example.com:9092
+    #SASL:     brokers=broker1.example.com:9093,broker2.example.com:9093
+    #SSL:      brokers=broker1.example.com:9094,broker2.example.com:9094
+    #SASL+SSL: brokers=broker1.example.com:9095,broker2.example.com:9095
 
 Create a topic:
 
