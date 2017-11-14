@@ -15,11 +15,20 @@ class kafka::server::config {
 
   $properties = $::kafka::_properties
   $properties_list = keys($::kafka::_properties)
-  file { "${kafka::confdir}/server.properties":
+  file { "${::kafka::confdir}/server.properties":
     owner   => 'kafka',
     group   => 'kafka',
     mode    => '0640',
     content => template('kafka/properties.erb'),
+  }
+
+  if ($::kafka::log_dirs) {
+    ensure_resource('file', $::kafka::log_dirs, {
+      ensure => directory,
+      owner  => 'kafka',
+      group  => 'kafka',
+      mode   => '0755',
+    })
   }
 
   # fix buggy startup script (BigTop 1.2.0)

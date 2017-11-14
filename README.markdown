@@ -12,6 +12,7 @@
     * [Security](#security)
     * [SSL](#ssl)
     * [IPv6](#ipv6)
+    * [Best Practices](#best-practices)
 4. [Client Examples](#client-example)
 5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
     * [Module Parameters](#parameters)
@@ -25,6 +26,10 @@ This module installs and configures Apache Kafka brokers.
 It expects list of hostnames, where brokers should be running. Broker IDs will be generated according to the ordering of these hostnames.
 
 Puppet module takes list of the zookeeper servers from zookeeper puppet module.
+
+Tested on:
+
+* Debian 8/wheezy: BigTop 1.2.0/Kafka 0.10.1.1 (custom build)
 
 ## Setup
 
@@ -155,7 +160,7 @@ Note, some Hadoop addons needs to have the key password the same as the keystore
 
 IPv6 is working out-of-the-box.
 
-But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference to IPv4 though. Everything is working, but there are unusuccessful connection attempts and exceptions in logs.
+But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference to IPv4 though. Everything is working, but there are unsuccessful connection attempts and exceptions in logs.
 
 **IPv4 example without security**:
 
@@ -185,6 +190,16 @@ But on IPv4-only hosts with enabled IPv6 locally, you may need to set preference
         }
       }
     }
+
+### Best Practices
+
+Some best practices:
+
+* use *log_dirs* parameter and directories on separated disks, or use RAID
+* increase file descriptors limit (recommended minimal value is 128000)
+* for performance reasons, keep flushing at default values and let OS to flush
+* do not co-locate Zookeeper servers with Kafka brokers
+* for robustness and scalability use more Kafka brokers
 
 ## Client Examples
 
@@ -233,6 +248,14 @@ Launch producer:
 
 ### Parameters
 
+####`acl_enable`
+
+Enable ACL in Kafka. Default: undef.
+
+Nothing is permitted after enabling ACL. You need to explitly set proper ACL.
+
+See */usr/lib/kafka/bin/kafka-acls.sh* utility.
+
 ####`alternatives`
 
 Switches the alternatives used for the configuration. Default: 'cluster' (Debian) or undef.
@@ -261,6 +284,12 @@ By default, the ID is generated automatically as order of the node hostname (*::
 
 Beware changing requires internal data cleanups or internal metadata modification.
 
+####`log_dirs`
+
+The directories, where the log data is kept. Default: undef.
+
+For better performance it is recommended to use more directories on separated disks.
+
 ####`keytab`
 
 Kerberos keytab file. Default: '/etc/security/keytab/kafka.service.keytab'.
@@ -277,7 +306,7 @@ Some properties are set automatically, "::undef" string explicitly removes given
 
 Kerberos realm. Default: ''.
 
-Non-empty value will enable security with SASL suport.
+Non-empty value will enable security with SASL support.
 
 ####`ssl`
 
@@ -313,9 +342,11 @@ This parameter is not needed, if all Kafka brokers sits on any of the Zookeeper 
 
 ## Limitations
 
-No repository is provided. It must be setup externaly, or the Kafka packages must be installed already.
+No repository is provided. It must be setup externally, or the Kafka packages must be installed already.
 
 *zookeeper\_hostnames* parameter is a complication and optionally it should not be needed. But that would require refactoring of zookeeper puppet module - to separate zookeeper configuration class from zookeeper server setup.
+
+Beside Kerberos, Kafka can be secured using passwords. This is not covered by this puppet module. It would be mostly about different *jaas-\*.conf* files, so it can be easily overriden, if needed.
 
 ## Development
 

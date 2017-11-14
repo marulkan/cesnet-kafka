@@ -4,16 +4,18 @@
 # Main class.
 #
 class kafka (
+  $acl_enable = undef,
   $alternatives = '::default',
   $environment = undef,
-  $zookeeper_chroot = '/kafka',
   $hostnames = undef,
-  $zookeeper_hostnames = undef,
   $id = undef,
+  $log_dirs = undef,
   $properties = undef,
   $package_name = $::kafka::params::package_name,
   $package_client_name = $::kafka::params::package_client_name,
   $service_name = $::kafka::params::service_name,
+  $zookeeper_chroot = '/kafka',
+  $zookeeper_hostnames = undef,
   $keytab = '/etc/security/keytab/kafka.service.keytab',
   $realm = '',
   $ssl = undef,
@@ -126,7 +128,16 @@ class kafka (
     $ssl_properties = undef
   }
 
-  $_properties = merge($dyn_properties, $sec_properties, $ssl_properties, $properties)
+  if $acl_enable {
+    $acl_properties = {
+      'authorizer.class.name' => 'kafka.security.auth.SimpleAclAuthorizer',
+      'super.users' => 'User:kafka',
+    }
+  } else {
+    $acl_properties = undef
+  }
+
+  $_properties = merge($dyn_properties, $sec_properties, $ssl_properties, $acl_properties, $acl_properties, $properties)
   # subset to use for clients
   $client_properties_list = [
     'sasl.kerberos.service.name',
