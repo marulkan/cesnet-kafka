@@ -54,20 +54,22 @@ class kafka (
     if $ssl {
       $protocol = 'SASL_SSL'
       $port = 9094
+      $listeners = 'SASL_SSL://0.0.0.0:9094'
     } else {
       $protocol = 'SASL_PLAINTEXT'
       $port = 9093
+      $listeners = 'SASL_PLAINTEXT://0.0.0.0:9093,SASL_SSL://0.0.0.0:9094'
     }
-    $listeners = 'SASL_PLAINTEXT://0.0.0.0:9093,SASL_SSL://0.0.0.0:9094'
   } else {
     if $ssl {
       $protocol = 'SSL'
       $port = 9092
+      $listeners = 'SSL://0.0.0.0:9092'
     } else {
       $protocol = 'PLAINTEXT'
       $port = 9091
+      $listeners = 'PLAINTEXT://0.0.0.0:9091,SSL://0.0.0.0:9092'
     }
-    $listeners = 'PLAINTEXT://0.0.0.0:9091,SSL://0.0.0.0:9092'
   }
 
   $dyn_properties = {
