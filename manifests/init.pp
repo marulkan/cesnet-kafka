@@ -92,6 +92,14 @@ class kafka (
     'listeners' => $listeners,
   }
 
+  if ($log_dirs) {
+    $dir_properties = {
+      'log.dirs' => join($log_dirs, ','),
+    }
+  } else {
+    $dir_properties = undef
+  }
+
   # update also "Auth to local rules" chapter
   $auth_rules_default ="\
 RULE:[2:\$1;\$2@\$0](kafka;.*@${realm})s/^.*$/kafka/,\
@@ -188,7 +196,7 @@ DEFAULT\
     'client' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client),
     'consumer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_consumer),
     'producer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_producer),
-    'server' => merge($kafka_properties, $sec_properties['server'], $ssl_properties['server'], $acl_properties, $properties_server),
+    'server' => merge($kafka_properties, $dir_properties, $sec_properties['server'], $ssl_properties['server'], $acl_properties, $properties_server),
   }
 
   if $environment and has_key($environment, 'client') {
