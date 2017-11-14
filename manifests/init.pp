@@ -72,7 +72,7 @@ class kafka (
     }
   }
 
-  $dyn_properties = {
+  $kafka_properties = {
     'broker.id' => $_id,
     'num.network.threads' => 3,
     'num.io.threads' => 8,
@@ -86,8 +86,7 @@ class kafka (
     #'log.retention.bytes' => 1073741824,
     'log.segment.bytes' => 1073741824,
     'log.retention.check.interval.ms' => 300000,
-    # value generated properties.erb
-    'zookeeper.connect' => '::undef',
+    'zookeeper.connect' => '::default', # value generated in properties.erb
     'zookeeper.connection.timeout.ms' => 6000,
     'advertised.listeners' => "${protocol}://${::fqdn}:${port}",
     'listeners' => $listeners,
@@ -103,31 +102,50 @@ class kafka (
       },
     }
     $sec_properties = {
-      'sasl.kerberos.service.name' => 'kafka',
-      'security.protocol' => $protocol,
-      'security.inter.broker.protocol' => $protocol,
-      'zookeeper.set.acl' => true,
+      'client' => {
+        'sasl.kerberos.service.name' => 'kafka',
+        'security.protocol' => $protocol,
+      },
+      'server' => {
+        'sasl.kerberos.service.name' => 'kafka',
+        'security.protocol' => $protocol,
+        'security.inter.broker.protocol' => $protocol,
+        'zookeeper.set.acl' => true,
+      },
     }
   } else {
     $sec_environment = {
       'client' => undef,
       'server' => undef,
     }
-    $sec_properties = undef
+    $sec_properties = {
+      'client' => undef,
+      'server' => undef,
+    }
   }
 
   if $ssl {
     $ssl_properties = {
-      'security.protocol' => $protocol,
-      'security.inter.broker.protocol' => $protocol,
-      'ssl.keystore.location' => "${::kafka::homedir}/keystore.server",
-      'ssl.keystore.password' => $ssl_keystore_password,
-      'ssl.key.password' => $ssl_keystore_keypassword,
-      'ssl.truststore.location' => $ssl_cacerts,
-      'ssl.truststore.password' => $ssl_cacerts_password,
+      'client' => {
+        'security.protocol' => $protocol,
+        'ssl.truststore.location' => $ssl_cacerts,
+        'ssl.truststore.password' => $ssl_cacerts_password,
+      },
+      'server' => {
+        'security.protocol' => $protocol,
+        'security.inter.broker.protocol' => $protocol,
+        'ssl.keystore.location' => "${::kafka::homedir}/keystore.server",
+        'ssl.keystore.password' => $ssl_keystore_password,
+        'ssl.key.password' => $ssl_keystore_keypassword,
+        'ssl.truststore.location' => $ssl_cacerts,
+        'ssl.truststore.password' => $ssl_cacerts_password,
+      },
     }
   } else {
-    $ssl_properties = undef
+    $ssl_properties = {
+      'client' => undef,
+      'server' => undef,
+    }
   }
 
   if $acl_enable {
@@ -139,14 +157,32 @@ class kafka (
     $acl_properties = undef
   }
 
-  $_properties = merge($dyn_properties, $sec_properties, $ssl_properties, $acl_properties, $acl_properties, $properties)
-  # subset to use for clients
-  $client_properties_list = [
-    'sasl.kerberos.service.name',
-    'security.protocol',
-    'ssl.truststore.location',
-    'ssl.truststore.password',
-  ]
+  if $properties and has_key($properties, 'client') {
+    $properties_client = $properties['client']
+  } else {
+    $properties_client = undef
+  }
+  if $properties and has_key($properties, 'consumer') {
+    $properties_consumer = $properties['consumer']
+  } else {
+    $properties_consumer = undef
+  }
+  if $properties and has_key($properties, 'producer') {
+    $properties_producer = $properties['producer']
+  } else {
+    $properties_producer = undef
+  }
+  if $properties and has_key($properties, 'server') {
+    $properties_server = $properties['server']
+  } else {
+    $properties_server = undef
+  }
+  $_properties = {
+    'client' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client),
+    'consumer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_consumer),
+    'producer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_producer),
+    'server' => merge($kafka_properties, $sec_properties['server'], $ssl_properties['server'], $acl_properties, $properties_server),
+  }
 
   if $environment and has_key($environment, 'client') {
     $environment_client = $environment['client']

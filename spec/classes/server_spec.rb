@@ -9,6 +9,7 @@ describe 'kafka::server::config', :type => 'class' do
 
       it { should compile.with_all_deps }
       it { should contain_file('/etc/kafka/conf/server.properties') }
+      it { should contain_file('/etc/kafka/conf/jaas-server.conf') }
     end
   end
 end

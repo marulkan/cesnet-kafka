@@ -13,13 +13,11 @@ class kafka::server::config {
     content => template('kafka/env.sh.erb'),
   }
 
-  $properties = $::kafka::_properties
-  $properties_list = keys($::kafka::_properties)
-  file { "${::kafka::confdir}/server.properties":
-    owner   => 'kafka',
-    group   => 'kafka',
-    mode    => '0640',
-    content => template('kafka/properties.erb'),
+  kafka::properties { "${::kafka::confdir}/server.properties":
+    owner      => 'kafka',
+    group      => 'kafka',
+    mode       => '0640',
+    properties => $::kafka::_properties['server'],
   }
 
   if ($::kafka::log_dirs) {

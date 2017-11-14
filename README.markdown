@@ -42,6 +42,8 @@ Tested on:
 * Files modified:
  * */etc/default/kafka-server*
  * */etc/kafka/conf/client.properties*
+ * */etc/kafka/conf/consumer.properties*
+ * */etc/kafka/conf/producer.properties*
  * */etc/kafka/conf/server.properties*
  * */etc/profile.d/kafka.csh*
  * */etc/profile.d/kafka.sh*
@@ -246,7 +248,13 @@ Launch producer:
 * `kafka::client::service`: Stub class
 * `kafka::params`
 
+### Resources
+
+* `kafka::properties`: Generic resource to generate properties files
+
 ### Parameters
+
+Parameters of the main configuration class *kafka*.
 
 ####`acl_enable`
 
@@ -299,6 +307,10 @@ Kerberos keytab file with principal *kafka/HOSTNAME*.
 ####`properties`
 
 Generic properties to be set for the Kafka brokers. Default: undef.
+
+Value is a hash with *client*, *consumer*, *producer*, and *server* keys.
+
+All keys from *client* are merged into both *consumer* and *producer*.
 
 Some properties are set automatically, "::undef" string explicitly removes given property. Empty string sets the empty value.
 

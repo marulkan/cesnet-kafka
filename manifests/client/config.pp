@@ -17,13 +17,23 @@ class kafka::client::config {
     content => template('kafka/env.csh.erb'),
   }
 
-  $properties = $::kafka::_properties
-  $properties_list = $::kafka::client_properties_list
-  file { "${kafka::confdir}/client.properties":
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => template('kafka/properties.erb'),
+  kafka::properties { "${kafka::confdir}/client.properties":
+    owner      => 'root',
+    group      => 'root',
+    mode       => '0644',
+    properties => $::kafka::_properties['client'],
+  }
+  kafka::properties { "${kafka::confdir}/consumer.properties":
+    owner      => 'root',
+    group      => 'root',
+    mode       => '0644',
+    properties => $::kafka::_properties['consumer'],
+  }
+  kafka::properties { "${kafka::confdir}/producer.properties":
+    owner      => 'root',
+    group      => 'root',
+    mode       => '0644',
+    properties => $::kafka::_properties['producer'],
   }
 
   if $::kafka::realm and $::kafka::realm != '' {
