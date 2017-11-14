@@ -30,7 +30,8 @@ Puppet module takes list of the zookeeper servers from zookeeper puppet module.
 
 Tested on:
 
-* Debian 8/wheezy: BigTop 1.2.0/Kafka 0.10.1.1 (custom build)
+* Debian 7/wheezy: BigTop 1.2.0/Kafka 0.10.1.1 (custom build)
+* Debian 8/jessie: BigTop 1.2.0/Kafka 0.10.1.1 (custom build)
 
 ## Setup
 
@@ -42,10 +43,7 @@ Tested on:
  * this module switches to the new alternative by default on Debian, so the original configuration can be kept intact
 * Files modified:
  * */etc/default/kafka-server*
- * */etc/kafka/conf/client.properties*
- * */etc/kafka/conf/consumer.properties*
- * */etc/kafka/conf/producer.properties*
- * */etc/kafka/conf/server.properties*
+ * */etc/kafka/conf/\**: properties, JAAS config files
  * */etc/profile.d/kafka.csh*
  * */etc/profile.d/kafka.sh*
  * */usr/lib/kafka/bin/kafka-server-startup.sh*: added line to load */etc/default/kafka-server*
@@ -75,6 +73,11 @@ Be aware of:
       'zoo3.example.com',
     ]
 
+    class{'kafka':
+      hostnames           => $kafka_brokers,
+      zookeeper_hostnames => $zookeeper_hostnames,
+    }
+
     node /zoo.\.example'.com/ {
       class{'zookeeper':
         hostnames => $zookeeper_hostnames,
@@ -82,11 +85,11 @@ Be aware of:
     }
 
     node /broker.\.example'.com/ {
-      class{'kafka':
-        hostnames           => $kafka_brokers,
-        zookeeper_hostnames => $zookeeper_hostnames,
-      }
       include ::kafka::server
+    }
+
+    node 'client.example.com' {
+      include ::kafka::client
     }
 
 **Example 2**: manual ID assignments
@@ -123,6 +126,13 @@ Be aware of:
       include ::kafka::server
     }
 
+    node 'client.example.com' {
+      class{'kafka':
+        zookeeper_hostnames => $zookeeper_hostnames,
+      }
+      include ::kafka::client
+    }
+
 ### Security
 
 It is possible to enable authentication using Kerberos.
@@ -144,20 +154,20 @@ Principal name: *kafka/HOSTNAME*
 Kerberos principal mapping rules are set as:
 
 * *kafka/&lt;HOST&gt;@&lt;REALM&gt;* -&gt; *kafka*
-* *zookeeker/&lt;HOST&gt;@&lt;REALM&gt;* -&gt; *zookeeper*
+* *zookeeper/&lt;HOST&gt;@&lt;REALM&gt;* -&gt; *zookeeper*
 * *DEFAULT*
 
-This can be overriden by *sasl.kerberos.principal.to.local.rules* server property, which accepts comma separated list of rules.
+This can be overridden by *sasl.kerberos.principal.to.local.rules* server property, which accepts comma separated list of rules.
 
-In case there is no cross-realm Kerberos environment and you use standard "zookeeper" and "kafka" machine principals, you can remove the property:
+In case there is no cross-realm Kerberos environment and standard "zookeeper" and "kafka" machine principals are used, you can remove the property:
 
     class { 'kafka':
+      ...
       properties => {
         'server' => {
           'sasl.kerberos.principal.to.local.rules' => '::undef',
         }
       },
-      ...
     }
 
 ### SSL
@@ -260,11 +270,11 @@ Launch producer:
 ### Classes
 
 * [**`kafka`**](#parameters): Main class
-* [**`kafka::server`**]: Kafka broker
+* **`kafka::server`**: Kafka broker
 * `kafka::server::config`: Configure Kafka broker
 * `kafka::server::install`: Installation of Kafka broker
 * `kafka::server::service`: Ensure the Kafka broker service is running
-* [**`kafka::client`**]: Kafka client
+* **`kafka::client`**: Kafka client
 * `kafka::client::config`: Stub class
 * `kafka::client::install`: Installation of Kafka client
 * `kafka::client::service`: Stub class
@@ -282,7 +292,7 @@ Parameters of the main configuration class *kafka*.
 
 Enable ACL in Kafka. Default: undef.
 
-Nothing is permitted after enabling ACL. You need to explitly set proper ACL.
+Nothing is permitted after enabling ACL. You need to explicitly set proper ACL.
 
 See */usr/lib/kafka/bin/kafka-acls.sh* utility.
 
@@ -302,7 +312,7 @@ Value is a hash with *client*, and *server* keys.
 
 Array of Kafka broker hostnames. Default: undef.
 
-Beware changing leads to changing Kafka broker ID, which requires internal data cleanups or internal metadata modification.
+Beware changing leads to changing Kafka broker ID, which requires internal data cleanups or manual internal metadata modification.
 
 ####`id`
 
@@ -312,11 +322,11 @@ ID of Kafka broker. Default: undef (=autodetect).
 
 By default, the ID is generated automatically as order of the node hostname (*::fqdn*) in the *hostnames* array.
 
-Beware changing requires internal data cleanups or internal metadata modification.
+Beware changing requires internal data cleanups or manual internal metadata modification.
 
 ####`log_dirs`
 
-The directories, where the log data is kept. Default: undef.
+The directories, where the log data are kept. Default: undef.
 
 For better performance it is recommended to use more directories on separated disks.
 
@@ -380,7 +390,7 @@ No repository is provided. It must be setup externally, or the Kafka packages mu
 
 *zookeeper\_hostnames* parameter is a complication and optionally it should not be needed. But that would require refactoring of zookeeper puppet module - to separate zookeeper configuration class from zookeeper server setup.
 
-Beside Kerberos, Kafka can be secured using passwords. This is not covered by this puppet module. It would be mostly about different *jaas-\*.conf* files, so it can be easily overriden, if needed.
+Beside Kerberos, Kafka can be secured using passwords. This is not covered by this puppet module. It would be mostly about different *jaas-\*.conf* files, so it can be easily overridden, if needed.
 
 ## Development
 
