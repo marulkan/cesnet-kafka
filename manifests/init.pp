@@ -92,6 +92,12 @@ class kafka (
     'listeners' => $listeners,
   }
 
+  # update also "Auth to local rules" chapter
+  $auth_rules_default ="\
+RULE:[2:\$1;\$2@\$0](kafka;.*@${realm})s/^.*$/kafka/,\
+RULE:[2:\$1;\$2@\$0](zookeeper;.*@${realm})s/^.*$/zookeeper/,\
+DEFAULT\
+"
   if $realm and $realm != '' {
     $sec_environment = {
       'client' => {
@@ -108,6 +114,7 @@ class kafka (
       },
       'server' => {
         'sasl.kerberos.service.name' => 'kafka',
+        'sasl.kerberos.principal.to.local.rules' => $auth_rules_default,
         'security.protocol' => $protocol,
         'security.inter.broker.protocol' => $protocol,
         'zookeeper.set.acl' => true,

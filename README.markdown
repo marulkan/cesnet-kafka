@@ -10,6 +10,7 @@
     * [Setup requirements](#setup-requirements)
 3. [Usage - Configuration options and additional functionality](#usage)
     * [Security](#security)
+     * [Auth to local mapping](#auth-to-local-mapping)
     * [SSL](#ssl)
     * [IPv6](#ipv6)
     * [Best Practices](#best-practices)
@@ -136,6 +137,27 @@ Principal name: *kafka/HOSTNAME*
       hostnames           => $kafka_brokers,
       zookeeper_hostnames => $zookeeper_hostnames,
       realm               => 'EXAMPLE.COM',
+    }
+
+#### Auth to local mapping
+
+Kerberos principal mapping rules are set as:
+
+* *kafka/&lt;HOST&gt;@&lt;REALM&gt;* -&gt; *kafka*
+* *zookeeker/&lt;HOST&gt;@&lt;REALM&gt;* -&gt; *zookeeper*
+* *DEFAULT*
+
+This can be overriden by *sasl.kerberos.principal.to.local.rules* server property, which accepts comma separated list of rules.
+
+In case there is no cross-realm Kerberos environment and you use standard "zookeeper" and "kafka" machine principals, you can remove the property:
+
+    class { 'kafka':
+      properties => {
+        'server' => {
+          'sasl.kerberos.principal.to.local.rules' => '::undef',
+        }
+      },
+      ...
     }
 
 ### SSL
