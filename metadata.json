@@ -1,6 +1,6 @@
 {
   "name": "cesnet-kafka",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "cesnet",
   "summary": "Apache Kafka Puppet Module",
   "license": "MIT",
@@ -18,7 +18,7 @@
     },
     {
       "name": "cesnet/hadoop_lib",
-      "version_requirement": "<1.0.0"
+      "version_requirement": ">= 0.3.0 <1.0.0"
     },
     {
       "name": "cesnet/zookeeper",
