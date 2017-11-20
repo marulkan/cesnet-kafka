@@ -292,9 +292,11 @@ Parameters of the main configuration class *kafka*.
 
 Enable ACL in Kafka. Default: undef.
 
-Nothing is permitted after enabling ACL. You need to explicitly set proper ACL.
+Enables internal Kafka ACL. Nothing is permitted after enabling ACL. You need to explicitly set proper ACL.
 
 See */usr/lib/kafka/bin/kafka-acls.sh* utility.
+
+Alternatively *Sentry* can be used for authentication, see *sentry_enable* parameter.
 
 ####`alternatives`
 
@@ -351,6 +353,12 @@ Some properties are set automatically, "::undef" string explicitly removes given
 Kerberos realm. Default: ''.
 
 Non-empty value will enable security with SASL support.
+
+####`sentry_enable`
+
+Enable Sentry authentication. Default: undef.
+
+Sentry client is required to be configured on all Kafka brokers (*/etc/sentry/conf/sentry-site.xml* file created).
 
 ####`ssl`
 

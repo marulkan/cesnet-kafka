@@ -14,6 +14,7 @@ class kafka (
   $package_name = $::kafka::params::package_name,
   $package_client_name = $::kafka::params::package_client_name,
   $service_name = $::kafka::params::service_name,
+  $sentry_enable = undef,
   $zookeeper_chroot = '/kafka',
   $zookeeper_hostnames = undef,
   $keytab = '/etc/security/keytab/kafka.service.keytab',
@@ -172,6 +173,19 @@ DEFAULT\
     $acl_properties = undef
   }
 
+  if $sentry_enable {
+    $sentry_properties = {
+      'authorizer.class.name' => 'org.apache.sentry.kafka.authorizer.SentryKafkaAuthorizer',
+      'sentry.kafka.site.url' => 'file:///etc/sentry/conf/sentry-site.xml',
+      'sentry.kafka.principal.hostname' => $::fqdn,
+      'sentry.kafka.kerberos.principal' => 'kafka',
+      'sentry.kafka.keytab.file' => $keytab,
+      'super.users' => 'User:kafka',
+    }
+  } else {
+    $sentry_properties = undef
+  }
+
   if $properties and has_key($properties, 'client') {
     $properties_client = $properties['client']
   } else {
@@ -196,7 +210,7 @@ DEFAULT\
     'client' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client),
     'consumer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_consumer),
     'producer' => merge($sec_properties['client'], $ssl_properties['client'], $properties_client, $properties_producer),
-    'server' => merge($kafka_properties, $dir_properties, $sec_properties['server'], $ssl_properties['server'], $acl_properties, $properties_server),
+    'server' => merge($kafka_properties, $dir_properties, $sec_properties['server'], $ssl_properties['server'], $acl_properties, $sentry_properties, $properties_server),
   }
 
   if $environment and has_key($environment, 'client') {
