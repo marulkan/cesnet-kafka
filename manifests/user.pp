@@ -35,3 +35,4 @@ class kafka::user {
     }
   }
   Group['kafka'] -> User['kafka']
+}
