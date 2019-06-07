@@ -18,6 +18,7 @@ class kafka (
   $zookeeper_chroot = '/kafka',
   $zookeeper_hostnames = undef,
   $keytab = '/etc/security/keytab/kafka.service.keytab',
+  $keytab_source = undef,
   $realm = '',
   $ssl = undef,
   $ssl_cacerts = $::kafka::params::cacerts,

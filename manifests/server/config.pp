@@ -41,10 +41,19 @@ class kafka::server::config {
     $keytab = $::kafka::keytab
     $principal = "kafka/${::fqdn}@${::kafka::realm}"
 
-    file { $keytab:
-      owner => 'kafka',
-      group => 'kafka',
-      mode  => '0400',
+    if $::kafka::keytab_source {
+      file { $keytab:
+        owner  => 'kafka',
+        group  => 'kafka',
+        mode   => '0400',
+        source => $::kafka::keytab_source,
+      }
+    } else {
+      file { $keytab:
+        owner => 'kafka',
+        group => 'kafka',
+        mode  => '0400',
+      }
     }
 
     file { "${::kafka::confdir}/jaas-server.conf":
