@@ -179,7 +179,7 @@ DEFAULT\
       'authorizer.class.name' => 'org.apache.sentry.kafka.authorizer.SentryKafkaAuthorizer',
       'sentry.kafka.site.url' => 'file:///etc/sentry/conf/sentry-site.xml',
       'sentry.kafka.principal.hostname' => $::fqdn,
-      'sentry.kafka.kerberos.principal' => 'kafka',
+      'sentry.kafka.kerberos.principal' => "kafka/${::fqdn}@${realm}",
       'sentry.kafka.keytab.file' => $keytab,
       'super.users' => 'User:kafka',
     }
